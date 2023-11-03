@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db-deployment
+  namespace: kubeapp-dev
+  labels:
+    app: db-label
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db-label
+  template:
+    metadata:
+      labels:
+        app: db-label
+    spec:
+      hostAliases:
+        - ip: 127.0.0.1
+          hostnames:
+            - localhost
+      containers:
+        - name: db-container
+          image: mysql:5.7
+          imagePullPolicy: Never
+          ports:
+            - name: http
+              containerPort: 3306
+              protocol: TCP
+#          livenessProbe:
+#            httpGet:
+#              path: /db/actuator/health
+#              port: http
+#            failureThreshold: 3
+#            periodSeconds: 30
+#          readinessProbe:
+#            httpGet:
+#              path: /db/actuator/health
+#              port: http
+#            failureThreshold: 3
+#            periodSeconds: 30
+          env:
+            - name: MYSQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: dbName
+            - name: MYSQL_DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: host
+            - name: MSQL_DB_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: port
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: root
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: user
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: password
+          volumeMounts:
+            - name: db-config
+              mountPath: /etc/db/conf.d
+            - name: db-persistent-storage
+              mountPath: /var/lib/db
+      volumes:
+        - name: db-config
+          configMap:
+            name: db-configmap
+        - name: db-persistent-storage
+          persistentVolumeClaim:
+            claimName: db-pvc

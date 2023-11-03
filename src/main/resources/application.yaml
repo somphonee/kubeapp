@@ -1,0 +1,14 @@
+
+server:
+  port: 8080
+  servlet:
+    context-path: /kubeapp
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  datasource:
+    url: jdbc:mysql://localhost:3306/MarketplaceDB
+    username: user
+    password: password
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
